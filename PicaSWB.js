@@ -11,7 +11,7 @@
 	"browserSupport": "gcs",
 	"lastUpdated": "2016-01-23 13:10:00"
 }
-
+d
 /*
   Zotero Export Translator für das Pica Intern Format
   (wie es im SWB Verbund benutzt wird)
