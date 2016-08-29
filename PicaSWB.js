@@ -314,10 +314,12 @@ function doExport() {
 			writeLine("4261", "Rezension von!!"); // zwischen den Ausrufezeichen noch die PPN des rezensierten Werkes manuell einfügen.
 		}
 		
-		//tags --> 5520
-		if (item.tags.length > 0) {
-			var tagStatement = "|s|" + item.tags.map(function(tag) { return tag.tag; }).join('; ');
-			writeLine("5520", tagStatement);
+		//Schlagwörter aus einem Thesaurus (Fremddaten) --> 5520
+		var i = 0, tagStatement;
+		while (item.tags.length > 0) {
+			tagStatement = item.tags.shift();
+				var tagStatement = "|s|" + item.tags.map(function(tag) { return tag.tag; }).join('; ').split(";", 1);
+				writeLine("5520", tagStatement);
 		}
 		
 		//SSG-Nummer --> 5056
