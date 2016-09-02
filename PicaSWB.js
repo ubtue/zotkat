@@ -9,7 +9,7 @@
 	"inRepository": true,
 	"translatorType": 2,
 	"browserSupport": "gcs",
-	"lastUpdated": "2016-08-29 19:13:00"
+	"lastUpdated": "2016-09-02 15:13:00"
 }
 
 // Zotero Export Translator für das Pica Intern Format
@@ -41,8 +41,9 @@
 
 var ssgNummer = "1";
 var defaultLanguage = "eng";
-var physicalForm = "A";//0500 Position 1
+var physicalForm = issnPhysicalFormMapping;//0500 Position 1	
 var cataloguingStatus = "u";//0500 Position 3
+var licenceField= issnLicenceFieldMapping; // 0500 Position 4 only for Open Access Items; http://swbtools.bsz-bw.de/cgi-bin/help.pl?cmd=kat&val=4085&regelwerk=RDA&verbund=SWB
 
 var journalMapping = {
 	"0021-9231" : "!014411350!" // Journal of Biblical Literature  http://swb.bsz-bw.de/DB=2.1/PPNSET?PPN=014411350&INDEXSET=1
@@ -69,6 +70,14 @@ var issnVolumeMapping = {
 	"2031-5929" : "N.S.",
 	"2031-5922" : "A.S."
  };
+var issnPhysicalFormMapping = {
+	"1550-0195" : "O",
+	"2031-5929" : "A",
+};
+var issnLicenceFieldMapping = {
+	"1550-0195" : "l",
+	"2031-5929" : "l",
+};
 
 // Da alles asynchron ablaufen kann:
 //Jede Lookup einer AutorIn zählt 1 zu count
@@ -119,6 +128,12 @@ function doExport() {
 		if (item.volume && item.ISSN && issnVolumeMapping[item.ISSN]) {
 			item.volume = issnVolumeMapping[item.ISSN] + item.volume;
 		}
+		if (physicalForm && item.ISSN && issnPhysicalFormMapping[item.ISSN]) {
+			physicalForm = issnPhysicalFormMapping[item.ISSN]; // position 1 http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
+		}
+		if (licenceField && item.ISSN && issnLicenceFieldMapping[item.ISSN]) {
+			licenceField = issnLicenceFieldMapping[item.ISSN]; // position 4 http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
+		}
 
 		var article = false;
 		switch (item.itemType) {
@@ -134,9 +149,9 @@ function doExport() {
 		//item.type --> 0500 Bibliographische Gattung und Status
 		//http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
 		if (article) {
-			writeLine("0500", physicalForm+"o"+cataloguingStatus);//z.B. Aou, Oox
+			writeLine("0500", physicalForm+"o"+cataloguingStatus+licenceField);//z.B. Aou, Oox, Ooul
 		} else {
-			writeLine("0500", physicalForm+"a"+cataloguingStatus);//z.B. Aau
+			writeLine("0500"); // wenn kein Mapping, dann manuelle Eingabe
 		}
 		
 		//item.type --> 0501 Inhaltstyp
@@ -272,7 +287,7 @@ function doExport() {
 			var volumeyearissuepage = "";
 			if (item.volume) { volumeyearissuepage += "$v" + item.volume; }
 			if (date.year !== undefined) { volumeyearissuepage +=  "$j" + date.year; }
-			if (item.issue) { volumeyearissuepage += "$h" + item.issue; }
+			if (item.issue) { volumeyearissuepage += "$h" + item.issue.replace("-", "/").replace(/^0/, ""); }; }
 			if (item.pages) { volumeyearissuepage += "$p" + item.pages; }
 			
 			writeLine("4070", volumeyearissuepage);
