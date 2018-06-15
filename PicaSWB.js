@@ -91,6 +91,10 @@ function populateISSNMaps(mapData, url) {
         }
     }
 
+	if (temp.size == 0) {
+		throw "Empty map file! This is unexpected";
+	}
+
     switch (mapFilename) {
         case "ISSN_to_keyword_field.map":
             issn_to_keyword_field = temp;
@@ -100,15 +104,12 @@ function populateISSNMaps(mapData, url) {
             break;
         case "ISSN_to_licence.map":
             issn_to_license = temp;
-   //         licenceField = issn_to_license;
             break;
         case "ISSN_to_physical_form.map":
             issn_to_physical_form = temp;
-    //        physicalForm = issn_to_physical_form;
             break;
         case "ISSN_to_SSG.map":
             issn_to_ssg = temp;
-    //        SsgField = issn_to_ssg;
             break;
         case "ISSN_to_superior_ppn.map":
             issn_to_superior_ppn = temp;
@@ -120,7 +121,7 @@ function populateISSNMaps(mapData, url) {
             language_to_language_code = temp;
             break;
         default:
-            Z.debug("Unknown map file: " + mapFilename);
+            throw "Unknown map file: " + mapFilename;
     }
 
     downloaded_map_files += 1;
@@ -498,7 +499,7 @@ function doExport() {
                 }
             }, function () {
                 if (downloaded_map_files != max_map_files)
-                    Z.debug("Some map files were not downloaded. The export process might fail!");
+                    throw "Some map files were not downloaded!";
 
                 performExport();
             });
