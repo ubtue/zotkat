@@ -44,7 +44,7 @@ var issn_to_superior_ppn = {};
 var issn_to_volume = {};
 var language_to_language_code = {};
 // Repository base URL
-var zts_enhancement_repo_url = 'https://raw.githubusercontent.com/ubtue/ub_tools/master/cpp/data/zts_client_maps/';
+var zts_enhancement_repo_url = 'https://raw.githubusercontent.com/ubtue/zotero-enhancement-maps/master/';
 var downloaded_map_files = 0;
 var max_map_files = 8;
 
