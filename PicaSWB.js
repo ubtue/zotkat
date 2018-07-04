@@ -48,12 +48,9 @@ var language_to_language_code = {};
 var zts_enhancement_repo_url = 'https://raw.githubusercontent.com/ubtue/zotero-enhancement-maps/master/';
 var downloaded_map_files = 0;
 var max_map_files = 8;
-
-// ab hier Programmcode
 var defaultSsgNummer = "1";
 var defaultLanguage = "eng";
 var lokaldatensatz = "\nE* l01\n7100$jn \n8002 ixzs;ixzo\n";
-//lokaldatensatz z.B. \\n6700 !372049834!\\n6700 !37205241X!\\n6700 !372053025!\\n6700!37205319X!
 
 //item.type --> 0500 Bibliographische Gattung und Status
 //http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
