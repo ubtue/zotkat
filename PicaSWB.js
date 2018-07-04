@@ -55,8 +55,8 @@ var lokaldatensatz = "\nE* l01\n7100$jn \n8002 ixzs;ixzo\n";
 //item.type --> 0500 Bibliographische Gattung und Status
 //http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
 // TODO: check if the folowing 3 variables are being used correctly
-var cataloguingStatus = "r";//0500 Position 3
-var cataloguingStatusO = "r";//0500 Position 3
+var cataloguingStatus = "n";//0500 Position 3
+var cataloguingStatusO = "n";//0500 Position 3
 
 function populateISSNMaps(mapData, url) {
     var mapFilename = url.substr(url.lastIndexOf("/") + 1);
@@ -437,12 +437,6 @@ function performExport() {
 			writeLine("4207", item.abstractNote.replace("<i>", "\'").replace("</i>", "\'").replace("<br/>", "").replace("Zusammenfassung", "").replace(" Summary", "").replace("", "").replace(/–/g, '-').replace(/&#160;/g, ""));
 		}
 
-		/* } else (!item.abstractNote){
-			writeLine("4207");
-			}
-
-		"4207", item.abstractNote.replace(/'/g, '\"').replace("<i>", "\'").replace("</i>", "\'").replace("<br/>", "").replace("Zusammenfassung", "").replace(" Summary", "").replace("", "")); */
-
 		//item.publicationTitle --> 4241 Beziehungen zur größeren Einheit
 		if (item.itemType == "journalArticle" || item.itemType == "magazineArticle") {
 			if (superiorPPN.length != 0) {
@@ -463,8 +457,6 @@ function performExport() {
 		} 	else {
 			writeLine("5056", defaultSsgNummer);
 		}
-
-
 
 		if (item.itemType == "journalArticle") {
 			writeLine ("",lokaldatensatz);
