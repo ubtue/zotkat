@@ -59,15 +59,12 @@ var lokaldatensatz = "\nE* l01\n7100$jn \n8002 ixzs;ixzo\n";
 //item.type --> 0500 Bibliographische Gattung und Status
 //http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
 // TODO: check if the folowing 3 variables are being used correctly
-var physicalForm = "";//0500 Position 1
 var cataloguingStatus = "r";//0500 Position 3
 var cataloguingStatusO = "r";//0500 Position 3
-var licenceField = ""; // 0500 Position 4 only for Open Access Items; http://swbtools.bsz-bw.de/cgi-bin/help.pl?cmd=kat&val=4085&regelwerk=RDA&verbund=SWB
-var SsgField = "";
 
 function populateISSNMaps(mapData, url) {
     var mapFilename = url.substr(url.lastIndexOf("/") + 1);
-    var temp = {};
+    var temp = new Map();
     var lines = mapData.split('\n');
 
     for (i in lines) {
@@ -84,10 +81,10 @@ function populateISSNMaps(mapData, url) {
 
         switch (mapFilename) {
             case "ISSN_to_superior_ppn.map":
-                temp[elements[0]] = "!" + elements[1] + "!";
+                temp.set(elements[0], "!" + elements[1] + "!");
                 break;
             default:
-                temp[elements[0]] = elements[1];
+                temp.set(elements[0], elements[1]);
         }
     }
 
@@ -187,23 +184,38 @@ function performExport() {
 
     var item;
 	while ((item = Zotero.nextItem())) {
+		var physicalForm = "";//0500 Position 1
+		var licenceField = ""; // 0500 Position 4 only for Open Access Items; http://swbtools.bsz-bw.de/cgi-bin/help.pl?cmd=kat&val=4085&regelwerk=RDA&verbund=SWB
+		var SsgField = "";
+		var superiorPPN = "";
 
+		item.ISSN = ZU.cleanISSN(item.ISSN);
+		Z.debug("Item ISSN: " + item.ISSN);
 		//enrich items based on their ISSN
-		if (!item.language && item.ISSN && issn_to_language_code[item.ISSN]) {
-			item.language = issn_to_language_code[item.ISSN];
+		if (!item.language && issn_to_language_code.get(item.ISSN) !== undefined) {
+			item.language = issn_to_language_code.get(item.ISSN);
+			Z.debug("Found lang:" + item.language);
 		}
-		if (SsgField && item.ISSN && issn_to_ssg[item.ISSN]) {
-			SsgField = issn_to_ssg[item.ISSN];
+		if (issn_to_ssg.get(item.ISSN) !== undefined) {
+			SsgField = issn_to_ssg.get(item.ISSN);
+			Z.debug("Found ssg:" + SsgField);
 		}
-		if (item.volume && item.ISSN && issn_to_volume[item.ISSN]) {
-			item.volume = issn_to_volume[item.ISSN] + item.volume;
+		if (!item.volume && issn_to_volume.get(item.ISSN) !== undefined) {
+			item.volume = issn_to_volume.get(item.ISSN) + item.volume;
+			Z.debug("Found volume:" + item.volume);
 		}
-		if (physicalForm && item.ISSN && issn_to_physical_form[item.ISSN]) {
-			physicalForm = issn_to_physical_form[item.ISSN]; // position 1 http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
+		if (issn_to_physical_form.get(item.ISSN) !== undefined) {
+			physicalForm = issn_to_physical_form.get(item.ISSN); // position 1 http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
+			Z.debug("Found physicalForm:" + physicalForm);
 		}
-		if (licenceField && item.ISSN && issn_to_license[item.ISSN]) {
-			licenceField = issn_to_license[item.ISSN]; // position 4 http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
-		}
+		if (issn_to_license.get(item.ISSN) !== undefined) {
+			licenceField = issn_to_license.get(item.ISSN); // position 4 http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
+			Z.debug("Found license:" + licenceField);
+        }
+		if (issn_to_superior_ppn.get(item.ISSN) !== undefined) {
+			superiorPPN = issn_to_superior_ppn.get(item.ISSN);
+			Z.debug("Found superiorPPN:" + superiorPPN);
+        }
 
 
 		var article = false;
@@ -233,7 +245,7 @@ function performExport() {
 
 		//item.type --> 0502 Medientyp
 			switch (physicalForm) {
-				case "A":
+			case "A":
 				writeLine("0502", "ohne Hilfsmittel zu benutzen$bn");
 				break;
 			case "O":
@@ -258,7 +270,7 @@ function performExport() {
 		//item.date --> 1100
 		var date = Zotero.Utilities.strToDate(item.date);
 		if (date.year !== undefined) {
-		writeLine("1100", date.year.toString() + "$n[" + date.year.toString() + "]");
+			writeLine("1100", date.year.toString() + "$n[" + date.year.toString() + "]");
 		}
 
 		//1130 Datenträger
@@ -430,15 +442,15 @@ function performExport() {
 
 		//item.publicationTitle --> 4241 Beziehungen zur größeren Einheit
 		if (item.itemType == "journalArticle" || item.itemType == "magazineArticle") {
-			if (item.ISSN && issn_to_superior_ppn[ZU.cleanISSN(item.ISSN)]) {
-				writeLine("4241", "Enthalten in" + issn_to_superior_ppn[ZU.cleanISSN(item.ISSN)]);
+			if (superiorPPN.length != 0) {
+				writeLine("4241", "Enthalten in " + superiorPPN);
 			} else if (item.publicationTitle) {
-				writeLine("4241", "Enthalten in"  + item.publicationTitle);
+				writeLine("4241", "Enthalten in "  + item.publicationTitle);
 			}
 
 		//4261 Themenbeziehungen (Beziehung zu der Veröffentlichung, die beschrieben wird)|case:magazineArticle
 		if (item.itemType == "magazineArticle") {
-				writeLine("4261", "Rezension von" + item.publicationTitle); // zwischen den Ausrufezeichen noch die PPN des rezensierten Werkes manuell einfügen.
+				writeLine("4261", "Rezension von " + item.publicationTitle); // zwischen den Ausrufezeichen noch die PPN des rezensierten Werkes manuell einfügen.
 			}
 
 		//SSG bzw. FID-Nummer --> 5056 "0" = Religionwissenschaft | "1" = Theologie | "0; 1" = RW & Theol.
@@ -455,9 +467,8 @@ function performExport() {
 			writeLine ("",lokaldatensatz);
 		}
 	//Schlagwörter aus einem Thesaurus (Fremddaten) --> 5520 (oder alternativ siehe Mapping)
-                if (item.ISSN && issn_to_keyword_field[ZU.cleanISSN(item.ISSN)]) {
-                        var ISSNclean = ZU.cleanISSN(item.ISSN);
-                        var codeBase = issn_to_keyword_field[ISSNclean];
+                if (issn_to_keyword_field.get(item.ISSN) !== undefined) {
+                        var codeBase = issn_to_keyword_field.get(item.ISSN);
                         for (i=0; i<item.tags.length; i++) {
                                 var code = codeBase + i;
                                 writeLine(code, "|s|" + item.tags[i].tag.replace(/\s?--\s?/g, '; '));
