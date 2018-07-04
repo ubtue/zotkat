@@ -268,13 +268,13 @@ function performExport() {
 		//item.type --> 0503 Datenträgertyp
         switch (physicalForm) {
             case "A":
-                addLine(currentItemId, "0503", "Band$bnc");
+                writeLine("0503", "Band$bnc");
                 break;
             case "O":
-                addLine(currentItemId, "0503", "Online-Ressource$bcr");
+                writeLine("0503", "Online-Ressource$bcr");
                 break;
             default:
-                addLine(currentItemId, "0503", "");
+                writeLine("0503", "");
         }
 		//item.date --> 1100
 		var date = Zotero.Utilities.strToDate(item.date);
