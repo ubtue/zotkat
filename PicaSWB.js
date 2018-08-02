@@ -782,6 +782,8 @@ function performExport() {
 			if (item.notes) {
 				for (i in item.notes) {
 					var note = item.notes[i].note.replace("<p>", "").replace("</p>", "")
+		    			var re = /\s*,\s*/;
+					var notation_splits = note.toLowerCase().split(re);
                     var notation_splits = note.split(",")
                     for (i in notation_splits) {
                         var notation = notation_splits[i]
