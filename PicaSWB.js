@@ -1,7 +1,7 @@
 {
 	"translatorID": "2edf7a1b-eded-48d7-ae11-7126fd1c1b07",
 	"label": "PicaSWB",
-	"creator": "Philipp Zumstein, Timotheus Kim, Mario Trojan",
+	"creator": "Philipp Zumstein, Timotheus Kim, Mario Trojan, Madeesh Kanaan",
 	"target": "txt",
 	"minVersion": "3.0",
 	"maxVersion": "",
@@ -9,7 +9,7 @@
 	"inRepository": true,
 	"translatorType": 2,
 	"browserSupport": "gcs",
-	"lastUpdated": "2018-06-13 18:28:00"
+	"lastUpdated": "2018-07-04 17:53:00"
 }
 
 
@@ -108,7 +108,6 @@ var journal_title_to_language_code = {
 var defaultSsgNummer = "1";
 var defaultLanguage = "eng";
 var lokaldatensatz = "\nE* l01\n7100$jn \n8002 ixzs;ixzo\n";
-//lokaldatensatz z.B. \\n6700 !372049834!\\n6700 !37205241X!\\n6700 !372053025!\\n6700!37205319X!
 
 //item.type --> 0500 Bibliographische Gattung und Status
 //http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
@@ -646,7 +645,7 @@ function performExport() {
                     var note = ZU.unescapeHTML(item.notes[i].note)
                     var notation_splits = note.split(",")
                     for (i in notation_splits) {
-                        var notation = notation_splits[i]
+                        var notation = notation_splits[i].toLowerCase();
                         var notation_ppn = notes_to_ixtheo_notations.get(notation);
                         if (notation_ppn !== undefined) {
                             addLine(currentItemId, "6700", notation_ppn);
