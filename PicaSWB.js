@@ -643,7 +643,8 @@ function performExport() {
 			if (item.notes) {
 				for (i in item.notes) {
                     var note = ZU.unescapeHTML(item.notes[i].note)
-                    var notation_splits = note.split(",")
+                    var re = /\s*,\s*/;
+                    var notation_splits = note.split(re);
                     for (i in notation_splits) {
                         var notation = notation_splits[i].toLowerCase();
                         var notation_ppn = notes_to_ixtheo_notations.get(notation);
