@@ -44,10 +44,11 @@ var issn_to_ssg = {};
 var issn_to_superior_ppn = {};
 var issn_to_volume = {};
 var language_to_language_code = {};
+var notes_to_ixtheo_notations = {};
 // Repository base URL
 var zts_enhancement_repo_url = 'https://raw.githubusercontent.com/ubtue/zotero-enhancement-maps/master/';
 var downloaded_map_files = 0;
-var max_map_files = 8;
+var max_map_files = 9;
 
 
 /*
@@ -102,11 +103,6 @@ var journal_title_to_language_code = {
 	"Ephemerides Theologicae Lovanienses" : "fre",
 	"Science et Esprit" : "fre",
 }
-// Mapping Notes>IxTheo Notation
-var notes_to_ixtheo_notation = {
-    // Example: "hb" : "!12345678!"
-}
-
 /* =============================================================================================================== */
 // ab hier Programmcode
 var defaultSsgNummer = "1";
@@ -162,6 +158,7 @@ function populateISSNMaps(mapData, url) {
         }
 
         switch (mapFilename) {
+            case "notes_to_ixtheo_notations.map":
             case "ISSN_to_superior_ppn.map":
                 temp.set(elements[0], "!" + elements[1] + "!");
                 break;
@@ -198,6 +195,9 @@ function populateISSNMaps(mapData, url) {
             break;
         case "language_to_language_code.map":
             language_to_language_code = temp;
+            break;
+        case "notes_to_ixtheo_notations.map":
+            notes_to_ixtheo_notations = temp;
             break;
         default:
             throw "Unknown map file: " + mapFilename;
@@ -643,12 +643,12 @@ function performExport() {
 			// IxTheo Bezeichnungen --> 6800
 			if (item.notes) {
 				for (i in item.notes) {
-					var note = item.notes[i].note.replace("<p>", "").replace("</p>", "")
+                    var note = ZU.unescapeHTML(item.notes[i].note)
                     var notation_splits = note.split(",")
                     for (i in notation_splits) {
                         var notation = notation_splits[i]
-                        var notation_ppn = notes_to_ixtheo_notation[notation];
-                        if (notation_ppn) {
+                        var notation_ppn = notes_to_ixtheo_notations.get(notation);
+                        if (notation_ppn !== undefined) {
                             addLine(currentItemId, "6700", notation_ppn);
                         }
                     }
@@ -678,6 +678,7 @@ function doExport() {
             zts_enhancement_repo_url + "ISSN_to_superior_ppn.map",
             zts_enhancement_repo_url + "ISSN_to_volume.map",
             zts_enhancement_repo_url + "language_to_language_code.map",
+            zts_enhancement_repo_url + "notes_to_ixtheo_notations.map",
             ], function (responseText, request, url) {
                 switch (responseText) {
                     case "404: Not Found":
