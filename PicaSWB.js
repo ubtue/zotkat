@@ -1,7 +1,7 @@
 {
-	"translatorID": "2edf7a1b-eded-48d7-ae11-7126fd1c1b07",
-	"label": "PicaSWB",
-	"creator": "Philipp Zumstein, Timotheus Kim, Mario Trojan, Madeesh Kanaan",
+	"translatorID": "2edf7a1b-eded-48d7-ae11-7126fd1c1b07sa",
+	"label": "PicaSWB_IxTheo_single",
+	"creator": "Philipp Zumstein, Timotheus Kim, Mario Trojan, Madeeswaran Kannan",
 	"target": "txt",
 	"minVersion": "3.0",
 	"maxVersion": "",
@@ -9,7 +9,7 @@
 	"inRepository": true,
 	"translatorType": 2,
 	"browserSupport": "gcs",
-	"lastUpdated": "2018-07-04 17:53:00"
+	"lastUpdated": "2019-03-18 10:14:00"
 }
 
 
@@ -55,7 +55,7 @@ var max_map_files = 9;
     The following maps DO NOT have a corresponding file in the zts_enhancement_maps repository.
     Until they are added somewhere online for downloading, we'll use the hardcoded maps that follow:
 */
-// Mapping für JournalTitle>PPN
+// Mapping für JournalTitle missing ISSN >PPN
 var journal_title_to_ppn = {
 	"Perspectives in Religious Studies" : "!014809931!", //Perspectives in religious studies Print-PPN
 	"Journal of the Evangelical Theological Society" : "!345580796!", // Journal of the Evangelical Theological Society Print-PPN
@@ -103,11 +103,13 @@ var journal_title_to_language_code = {
 	"Ephemerides Theologicae Lovanienses" : "fre",
 	"Science et Esprit" : "fre",
 }
+
 /* =============================================================================================================== */
 // ab hier Programmcode
 var defaultSsgNummer = "1";
 var defaultLanguage = "eng";
 var lokaldatensatz = "\nE* l01\n7100$jn \n8002 ixzs;ixzo\n";
+//lokaldatensatz z.B. \\n6700 !372049834!\\n6700 !37205241X!\\n6700 !372053025!\\n6700!37205319X!
 
 //item.type --> 0500 Bibliographische Gattung und Status
 //http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
@@ -158,7 +160,7 @@ function populateISSNMaps(mapData, url) {
 
         switch (mapFilename) {
             case "notes_to_ixtheo_notations.map":
-            case "ISSN_to_superior_ppn.map":
+			case "ISSN_to_superior_ppn.map":
                 temp.set(elements[0], "!" + elements[1] + "!");
                 break;
             default:
@@ -195,7 +197,7 @@ function populateISSNMaps(mapData, url) {
         case "language_to_language_code.map":
             language_to_language_code = temp;
             break;
-        case "notes_to_ixtheo_notations.map":
+		case "notes_to_ixtheo_notations.map":
             notes_to_ixtheo_notations = temp;
             break;
         default:
@@ -243,7 +245,7 @@ async function processDocumentsCustom (url, processor, processorParams, onDone, 
 
 function addLine(itemid, code, value) {
     //Halbgeviertstrich ersetzen
-    value = value.replace(/–/g, '-').replace(/’/g, '\'').replace(/œ/g, '\\u0153').replace(/ā/g, '\\u0101').replace(/â/g, '\\u00E2').replace(/Ṣ/g, '\\u1E62').replace(/ṣ/g, '\\u1E63').replace(/ū/g, '\\u016B').replace(/ḥ/g, '\\u1E25').replace(/ī/g, '\\u012B').replace(/ṭ/g, '\\u1E6D').replace(/ʾ/g, '\\u02BE').replace(/ʿ/g, '\\u02BF').replace(/–/g, '-').replace(/&#160;/g, "");
+    value = value.replace(/–/g, '-').replace(/’/g, '\'').replace(/œ/g, '\\u0153').replace(/ā/g, '\\u0101').replace(/â/g, '\\u00E2').replace(/Ṣ/g, '\\u1E62').replace(/ṣ/g, '\\u1E63').replace(/ū/g, '\\u016B').replace(/ḥ/g, '\\u1E25').replace(/ī/g, '\\u012B').replace(/ṭ/g, '\\u1E6D').replace(/ʾ/g, '\\u02BE').replace(/ʿ/g, '\\u02BF').replace(/–/g, '-').replace(/&#160;/g, "").replace(/"/g, '\"').replace(/“/g, '\"').replace(/”/g, '\"');
 
     //Zeile zusammensetzen
     var line = code + " " + value;
@@ -391,7 +393,11 @@ function performExport() {
             addLine(currentItemId, "1140", "uwre");
         }
 
-
+				// 1140 text nur bei Online-Aufsätzen (Satztyp O), aber fakultativ
+		if (physicalForm === "O") {
+			addLine(currentItemId, "1140", "text");
+		}
+		
         //item.language --> 1500 Sprachcodes
         if (item.language) {
             if (language_to_language_code.get(item.language)) {
@@ -625,7 +631,7 @@ function performExport() {
             } else {
                 addLine(currentItemId, "5056", defaultSsgNummer);
             }
-
+			
             //Schlagwörter aus einem Thesaurus (Fremddaten) --> 5520 (oder alternativ siehe Mapping)
             if (issn_to_keyword_field.get(item.ISSN) !== undefined) {
                 var codeBase = issn_to_keyword_field.get(item.ISSN);
@@ -637,14 +643,13 @@ function performExport() {
                 for (i=0; i<item.tags.length; i++) {
                     addLine(currentItemId, "5520", "|s|" + ZU.unescapeHTML(item.tags[i].tag.replace(/\s?--\s?/g, '; ')));
                 }
-			}
-
-			// IxTheo Bezeichnungen --> 6800
+            }
+			//notes > IxTheo-Notation
 			if (item.notes) {
 				for (i in item.notes) {
-                    var note = ZU.unescapeHTML(item.notes[i].note)
+					var note = ZU.unescapeHTML(item.notes[i].note)
                     var re = /\s*,\s*/;
-                    var notation_splits = note.split(re);
+					var notation_splits = note.split(re);
                     for (i in notation_splits) {
                         var notation = notation_splits[i].toLowerCase();
                         var notation_ppn = notes_to_ixtheo_notations.get(notation);
@@ -678,7 +683,7 @@ function doExport() {
             zts_enhancement_repo_url + "ISSN_to_superior_ppn.map",
             zts_enhancement_repo_url + "ISSN_to_volume.map",
             zts_enhancement_repo_url + "language_to_language_code.map",
-            zts_enhancement_repo_url + "notes_to_ixtheo_notations.map",
+			zts_enhancement_repo_url + "notes_to_ixtheo_notations.map",
             ], function (responseText, request, url) {
                 switch (responseText) {
                     case "404: Not Found":
