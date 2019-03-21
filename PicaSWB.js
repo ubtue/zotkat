@@ -108,7 +108,7 @@ var journal_title_to_language_code = {
 // ab hier Programmcode
 var defaultSsgNummer = "1";
 var defaultLanguage = "eng";
-var lokaldatensatz = "\nE* l01\n7100$jn \n8002 ixzs;ixzo\n";
+var lokaldatensatz = "\nE* l01\n7100$Jn \n8002 ixzs$aixzo\n"; //8012 mehrere Abrufzeichen werden durch $a getrennt, nicht wie bisher durch Semikolon. Also: 8012 ixzs$aixzo
 //lokaldatensatz z.B. \\n6700 !372049834!\\n6700 !37205241X!\\n6700 !372053025!\\n6700!37205319X!
 
 //item.type --> 0500 Bibliographische Gattung und Status
@@ -170,7 +170,6 @@ function populateISSNMaps(mapData, url) {
 
 	if (temp.size == 0) {
 		throw "Empty map file! This is unexpected";
-
 	}
 
     switch (mapFilename) {
@@ -322,21 +321,20 @@ function performExport() {
 				break;
 		}
 
-		//item.type --> 0500 Bibliographische Gattung und Status
+		//item.type --> 0500 Bibliographische Gattung und Status K10Plus: 0500 das "o" an der 2. Stelle muss in ein "s" geändert werden
 		//http://swbtools.bsz-bw.de/winibwhelp/Liste_0500.htm
-
 		switch (true) {
 			case physicalForm === "A":
-				addLine(currentItemId, '0500', physicalForm+"o"+cataloguingStatus);
+				addLine(currentItemId, '0500', physicalForm+"s"+cataloguingStatus);
 				break;
-			case physicalForm === "O" && licenceField === "l":
-				addLine(currentItemId, '0500', physicalForm+"o"+cataloguingStatus+licenceField);
+			case physicalForm === "O" && licenceField === "l": // 0500 das "l" an der vierten Stelle entfällt, statt dessen wird $4LF in 4950 gebildet
+				addLine(currentItemId, '0500', physicalForm+"s"+cataloguingStatus);
 				break;
 			case physicalForm === "O" && licenceField === "kw":
-				addLine(currentItemId, '0500', physicalForm+"o"+cataloguingStatus);
+				addLine(currentItemId, '0500', physicalForm+"s"+cataloguingStatus);
 				break;
 			default:
-				addLine(currentItemId, '0500', physicalForm+"o"+cataloguingStatus); // //z.B. Aou, Oou, Oox etc.
+				addLine(currentItemId, '0500', physicalForm+"s"+cataloguingStatus); // //z.B. Aou, Oou, Oox etc.
 			}
         //item.type --> 0501 Inhaltstyp
         addLine(currentItemId, "0501", "Text$btxt");
@@ -371,10 +369,10 @@ function performExport() {
             addLine(currentItemId, "1100", date.year.toString() + "$n[" + date.year.toString() + "]");
         }
 
-        //1130 Datenträger
+        //1130 Datenträger K10Plus:1130 alle Codes entfallen, das Feld wird folglich nicht mehr benötigt
         //http://swbtools.bsz-bw.de/winibwhelp/Liste_1130.htm
 
-        switch (physicalForm) {
+        /*switch (physicalForm) {
             case "A":
                 addLine(currentItemId, "1130", "druck");
                 break;
@@ -383,20 +381,20 @@ function performExport() {
                 break;
             default:
                 addLine(currentItemId, "1130", "");
-        }
+        }*/
 
         //1131 Art des Inhalts
         if (item.itemType == "magazineArticle") {
             addLine(currentItemId, "1131", "!209083166!");
         }
 
-        // 1140 Veröffentlichungsart und Inhalt http://swbtools.bsz-bw.de/winibwhelp/Liste_1140.htm
-        if (item.itemType == "magazineArticle") {
+        // 1140 Veröffentlichungsart und Inhalt http://swbtools.bsz-bw.de/winibwhelp/Liste_1140.htm K10plus:1140 "uwre" entfällt. Das Feld wird folglich auch nicht mehr benötigt. Es sei denn es handelt sich um eines der folgenden Dokumente: http://swbtools.bsz-bw.de/cgi-bin/k10plushelp.pl?cmd=kat&val=1140&kattype=Standard
+        /*if (item.itemType == "magazineArticle") {
             addLine(currentItemId, "1140", "uwre");
-        }
+        }*/
 
 				// 1140 text nur bei Online-Aufsätzen (Satztyp O), aber fakultativ
-		    if (physicalForm === "O") {
+		if (physicalForm === "O") {
 			addLine(currentItemId, "1140", "text");
 		}
 		
@@ -460,7 +458,6 @@ function performExport() {
 		if (item.language == "spa" || !item.language) {
 			titleStatement = titleStatement.replace(/^(El|La|Los|Las|Un|Una|Unos|Unas) ([^@])/, "$1 @$2");
 		}
-
 
         var i = 0;
         var creator;
@@ -565,35 +562,35 @@ function performExport() {
         }
 
 
-        //4070 $v Bandzählung $j Jahr $h Heftnummer $p Seitenzahl
+        //4070 $v Bandzählung $j Jahr $h Heftnummer $p Seitenzahl K10Plus:4070 aus $h wird $a
         if (item.itemType == "journalArticle" || item.itemType == "magazineArticle") {
             var volumeyearissuepage = "";
 			if (item.volume) { volumeyearissuepage += "$v" + item.volume.replace("Tome ", "").replace(/\s\(Number\s\d+-?\d+\)/, "").replace(/^\d.\w..\s\w\w.\s/, ""); }
 			if (date.year !== undefined) { volumeyearissuepage +=  "$j" + date.year; }
-			if (item.issue) { volumeyearissuepage += "$h" + item.issue.replace("-", "/").replace(/^0/, ""); }
+			if (item.issue) { volumeyearissuepage += "$a" + item.issue.replace("-", "/").replace(/^0/, ""); }
 			if (item.pages) { volumeyearissuepage += "$p" + item.pages; }
 
             addLine(currentItemId, "4070", volumeyearissuepage);
         }
 
-        //URL --> 4085 nur bei Dokumenttyp "magazineArticle" für Rezension im Feld 0500
+        //URL --> 4085 nur bei Dokumenttyp "magazineArticle" für Rezension im Feld 0500 K10Plus:aus 4085 wird 4950 
         if (item.url && item.itemType == "magazineArticle") {
-            addLine(currentItemId, "4085", "$u" + item.url + "$xH");
+            addLine(currentItemId, "4950", "$u" + item.url + "$xR"); //K10Plus:wird die URL aus dem DOI, einem handle oder einem urn gebildet, sollte es $xR heißen und nicht $xH
         }
 
-		//URL --> 4085 nur bei Satztyp "O.." im Feld 0500
+		//URL --> 4085 nur bei Satztyp "O.." im Feld 0500 K10Plus:aus 4085 wird 4950 
 		switch (true) {
-			case item.url && physicalForm === "O" && licenceField === "l":
-				addLine(currentItemId, "4085", "$u" + item.url + "$xH$zLF");
+			case item.url && physicalForm === "O" && licenceField === "l": 
+				addLine(currentItemId, "4950", "$u" + item.url + "$xR$4LF");//K10Plus:0500 das "l" an der vierten Stelle entfällt, statt dessen wird $4LF in 4950 gebildet
 				break;
 			case item.url && physicalForm === "O" && licenceField === "kw":
-				addLine(currentItemId, "4085", "$u" + item.url + "$xH$zKW");
+				addLine(currentItemId, "4950", "$u" + item.url + "$xR$zKW");
 				break;
 			case item.url && physicalForm === "O":
-				addLine(currentItemId, "4085", "$u" + item.url + "$xH");
+				addLine(currentItemId, "4950", "$u" + item.url + "$xR");
 				break;
 			case item.url && item.itemType == "magazineArticle":
-				addLine(currentItemId, "4085", "$u" + item.url + "$xH");
+				addLine(currentItemId, "4950", "$u" + item.url + "$xR");
 				break;
 			}
         //Reihe --> 4110
@@ -629,7 +626,7 @@ function performExport() {
 
             //SSG bzw. FID-Nummer --> 5056 "0" = Religionwissenschaft | "1" = Theologie | "0; 1" = RW & Theol.
 
-            if (SsgField === "0" || SsgField === "0; 1" || SsgField === "FID-KRIM-DE-21") {
+            if (SsgField === "0" || SsgField === "0; 1" || SsgField === "FID-KRIM-DE-21") { //K10plus: 5056 mehrere SSG-Nummern werden durch $a getrennt: aus 5056 0;1 wird 5056 0$a1
                 addLine(currentItemId, "5056", SsgField);
             } else {
                 addLine(currentItemId, "5056", defaultSsgNummer);
@@ -647,7 +644,7 @@ function performExport() {
                     addLine(currentItemId, "5520", "|s|" + ZU.unescapeHTML(item.tags[i].tag.replace(/\s?--\s?/g, '; ')));
                 }
             }
-			//notes > IxTheo-Notation
+			//notes > IxTheo-Notation K10plus: 6700 wird hochgezählt und nicht wiederholt, inkrementell ab z.B. 6800, 6801, 6802 etc.
 			if (item.notes) {
 				for (i in item.notes) {
 					var note = ZU.unescapeHTML(item.notes[i].note)
@@ -657,13 +654,16 @@ function performExport() {
                         var notation = notation_splits[i].toLowerCase();
                         var notation_ppn = notes_to_ixtheo_notations.get(notation);
                         if (notation_ppn !== undefined) {
-                            addLine(currentItemId, "6700", notation_ppn);
-                        }
-                    }
+							var field = 670 + i
+								 for (i=0; i<item.notes.length; i++) {
+								addLine(currentItemId, field, notation_ppn);
+							}
+						}
+					}
 				}
 			}
 
-			addLine(currentItemId, "E* l01" + "\n" + "7100 $jn" + "\n8002 ixzs;ixzo" + "\n" + "\n", "");
+			addLine(currentItemId, "E* l01" + "\n" + "7100 $Jn" + "\n8012 ixzs$aixzo" + "\n" + "\n", ""); //K10plus:das "j" in 7100 $jn wird jetzt groß geschrieben, also $Jn / aus 8002,  dem Feld für die lokalen Abrufzeichen, wird 8012/ 8012 mehrere Abrufzeichen werden durch $a getrennt, nicht wie bisher durch Semikolon. Also: 8012 ixzs$aixzo
         }
     }
 
