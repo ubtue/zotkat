@@ -394,9 +394,9 @@ function performExport() {
         }*/
 
 				// 1140 text nur bei Online-Aufsätzen (Satztyp O), aber fakultativ
-		if (physicalForm === "O") {
+		/*if (physicalForm === "O") {
 			addLine(currentItemId, "1140", "text");
-		}
+		}*/
 		
         //item.language --> 1500 Sprachcodes
         if (item.language) {
