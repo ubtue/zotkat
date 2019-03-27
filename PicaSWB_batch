@@ -470,10 +470,10 @@ function performExport() {
 
                 var code = 0;
                 if (i === 0) {
-                    code = "3000";
+                    code = "\\n3000";
                     titleStatement += "$h" + (creator.firstName ? creator.firstName + " " : "") + creator.lastName;
                 } else {
-                    code = "3010";
+                    code = "\\n3010";
                 }
 
                 i++;
