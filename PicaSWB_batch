@@ -109,7 +109,7 @@ var journal_title_to_language_code = {
 // ab hier Programmcode
 var defaultSsgNummer = "1";
 var defaultLanguage = "eng";
-var lokaldatensatz = "\nE* l01\n7100$Jn \n8002 ixzs$aixzo\n"; //8012 mehrere Abrufzeichen werden durch $a getrennt, nicht wie bisher durch Semikolon. Also: 8012 ixzs$aixzo
+
 //lokaldatensatz z.B. \\n6700 !372049834!\\n6700 !37205241X!\\n6700 !372053025!\\n6700!37205319X!
 
 //item.type --> 0500 Bibliographische Gattung und Status
@@ -264,7 +264,7 @@ function WriteItems() {
         if(index > 0) {
             Zotero.write("\n");
         }
-        Zotero.write(element.join("\n") + "\n");
+        Zotero.write('application.activeWindow.command("e", false);\napplication.activeWindow.title.insertText("' + element.join("") + "\n");
     });
 }
 
@@ -338,7 +338,7 @@ function performExport() {
 				addLine(currentItemId, '\\n0500', physicalForm+"s"+cataloguingStatus); // //z.B. Aou, Oou, Oox etc.
 			}
         //item.type --> 0501 Inhaltstyp
-        addLine(currentItemId, "\\n0500", "Text$btxt");
+        addLine(currentItemId, "\\n0501", "Text$btxt");
 
         //item.type --> 0502 Medientyp
         switch (physicalForm) {
@@ -571,7 +571,7 @@ function performExport() {
 			if (item.issue) { volumeyearissuepage += "$a" + item.issue.replace("-", "/").replace(/^0/, ""); }
 			if (item.pages) { volumeyearissuepage += "$p" + item.pages; }
 
-            addLine(currentItemId, "4070", volumeyearissuepage);
+            addLine(currentItemId, "\\n4070", volumeyearissuepage);
         }
 
         //URL --> 4085 nur bei Dokumenttyp "magazineArticle" für Rezension im Feld 0500 K10Plus:aus 4085 wird 4950 
@@ -609,7 +609,7 @@ function performExport() {
         //Inhaltliche Zusammenfassung --> 4207
         if (item.abstractNote) {
 			item.abstractNote = ZU.unescapeHTML(item.abstractNote);
-            addLine(currentItemId, "4207", item.abstractNote.replace("Zusammenfassung", "").replace(" Summary", "").replace("", "").replace(/–/g, '-').replace(/&#160;/g, "").replace('No abstract available.', '').replace('not available', ''));
+            addLine(currentItemId, "\\n4207", item.abstractNote.replace("Zusammenfassung", "").replace(" Summary", "").replace("", "").replace(/–/g, '-').replace(/&#160;/g, "").replace('No abstract available.', '').replace('not available', ''));
         }
 
         //item.publicationTitle --> 4241 Beziehungen zur größeren Einheit
@@ -655,7 +655,7 @@ function performExport() {
                         var notation = notation_splits[i].toLowerCase();
                         var notation_ppn = notes_to_ixtheo_notations.get(notation);
                         if (notation_ppn !== undefined) {
-							var field = n670 + i
+							var field = 670 + i
 								 for (i=0; i<item.notes.length; i++) {
 								addLine(currentItemId, '\\n'+field, notation_ppn);
 							}
@@ -664,7 +664,7 @@ function performExport() {
 				}
 			}
 
-			addLine(currentItemId, '\\nE* l01\\n7100$jn\\n8002 ixzs;ixzo");\napplication.activeWindow.pressButton("Enter");\n\n', ""); //K10plus:das "j" in 7100 $jn wird jetzt groß geschrieben, also $Jn / aus 8002,  dem Feld für die lokalen Abrufzeichen, wird 8012/ 8012 mehrere Abrufzeichen werden durch $a getrennt, nicht wie bisher durch Semikolon. Also: 8012 ixzs$aixzo
+			addLine(currentItemId, '\\nE* l01\\n7100$Jn\\n8002 ixzs;ixzo");\napplication.activeWindow.pressButton("Enter");\n\n', ""); //K10plus:das "j" in 7100 $jn wird jetzt groß geschrieben, also $Jn / aus 8002,  dem Feld für die lokalen Abrufzeichen, wird 8012/ 8012 mehrere Abrufzeichen werden durch $a getrennt, nicht wie bisher durch Semikolon. Also: 8012 ixzs$aixzo
         }
     }
 
