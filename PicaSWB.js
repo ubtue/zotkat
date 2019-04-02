@@ -1,6 +1,6 @@
 {
-	"translatorID": "2edf7a1b-eded-48d7-ae11-7126fd1c1b07sa",
-	"label": "PicaSWB_IxTheo_single",
+	"translatorID": "2edf7a1b-eded-48d7-ae11-7126fd1c1b07",
+	"label": "PicaK10plus_single",
 	"creator": "Philipp Zumstein, Timotheus Kim, Mario Trojan, Madeeswaran Kannan",
 	"target": "txt",
 	"minVersion": "3.0",
@@ -9,8 +9,9 @@
 	"inRepository": true,
 	"translatorType": 2,
 	"browserSupport": "gcs",
-	"lastUpdated": "2019-03-18 10:14:00"
+	"lastUpdated": "2019-03-27 11:00:00"
 }
+
 
 
 // Zotero Export Translator für das Pica Intern Format
@@ -245,7 +246,7 @@ async function processDocumentsCustom (url, processor, processorParams, onDone, 
 
 function addLine(itemid, code, value) {
     //Halbgeviertstrich ersetzen
-    value = value.replace(/–/g, '-').replace(/’/g, '\'').replace(/œ/g, '\\u0153').replace(/ā/g, '\\u0101').replace(/â/g, '\\u00E2').replace(/Ṣ/g, '\\u1E62').replace(/ṣ/g, '\\u1E63').replace(/ū/g, '\\u016B').replace(/ḥ/g, '\\u1E25').replace(/ī/g, '\\u012B').replace(/ṭ/g, '\\u1E6D').replace(/ʾ/g, '\\u02BE').replace(/ʿ/g, '\\u02BF').replace(/–/g, '-').replace(/&#160;/g, "").replace(/"/g, '\"').replace(/“/g, '\"').replace(/”/g, '\"');
+    value = value.replace(/–/g, '-').replace(/’/g, '\'').replace(/œ/g, '\u0153').replace(/ā/g, '\u0101').replace(/â/g, '\u00E2').replace(/Ṣ/g, '\u1E62').replace(/ṣ/g, '\u1E63').replace(/ū/g, '\u016B').replace(/ḥ/g, '\u1E25').replace(/ī/g, '\u012B').replace(/ṭ/g, '\u1E6D').replace(/ʾ/g, '\u02BE').replace(/ʿ/g, '\u02BF').replace(/–/g, '-').replace(/&#160;/g, "").replace(/"/g, '\"').replace(/“/g, '\"').replace(/”/g, '\"');
 
     //Zeile zusammensetzen
     var line = code + " " + value;
@@ -385,7 +386,7 @@ function performExport() {
 
         //1131 Art des Inhalts
         if (item.itemType == "magazineArticle") {
-            addLine(currentItemId, "1131", "!209083166!");
+            addLine(currentItemId, "1131", "!106186019!");
         }
 
         // 1140 Veröffentlichungsart und Inhalt http://swbtools.bsz-bw.de/winibwhelp/Liste_1140.htm K10plus:1140 "uwre" entfällt. Das Feld wird folglich auch nicht mehr benötigt. Es sei denn es handelt sich um eines der folgenden Dokumente: http://swbtools.bsz-bw.de/cgi-bin/k10plushelp.pl?cmd=kat&val=1140&kattype=Standard
@@ -394,9 +395,9 @@ function performExport() {
         }*/
 
 				// 1140 text nur bei Online-Aufsätzen (Satztyp O), aber fakultativ
-		if (physicalForm === "O") {
+		/*if (physicalForm === "O") {
 			addLine(currentItemId, "1140", "text");
-		}
+		}*/
 		
         //item.language --> 1500 Sprachcodes
         if (item.language) {
@@ -626,7 +627,7 @@ function performExport() {
 
             //SSG bzw. FID-Nummer --> 5056 "0" = Religionwissenschaft | "1" = Theologie | "0; 1" = RW & Theol.
 
-            if (SsgField === "0" || SsgField === "0; 1" || SsgField === "FID-KRIM-DE-21") { //K10plus: 5056 mehrere SSG-Nummern werden durch $a getrennt: aus 5056 0;1 wird 5056 0$a1
+            if (SsgField === "0" || SsgField === "0$a1" || SsgField === "FID-KRIM-DE-21") { //K10plus: 5056 mehrere SSG-Nummern werden durch $a getrennt: aus 5056 0;1 wird 5056 0$a1
                 addLine(currentItemId, "5056", SsgField);
             } else {
                 addLine(currentItemId, "5056", defaultSsgNummer);
